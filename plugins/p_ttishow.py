@@ -1,14 +1,13 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from pyrogram.errors.exceptions.bad_request_400 import MessageTooLong, PeerIdInvalid
-from info import ADMINS, LOG_CHANNEL, SUPPORT_CHAT
+from info import ADMINS, LOG_CHANNEL, SUPPORT_CHAT, WELCOM_PIC, WELCOM_TEXT
 from database.users_chats_db import db
 from database.ia_filterdb import Media
 from utils import get_size, temp
 from Script import script
 from pyrogram.errors import ChatAdminRequired
 
-"""-----------------------------------------https://t.me/GetTGLink/4179 --------------------------------------"""
 
 @Client.on_message(filters.new_chat_members & filters.group)
 async def save_group(bot, message):
@@ -17,10 +16,10 @@ async def save_group(bot, message):
         if not await db.get_chat(message.chat.id):
             total=await bot.get_chat_members_count(message.chat.id)
             r_j = message.from_user.mention if message.from_user else "Anonymous" 
-            await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_G.format(message.chat.title, message.chat.id, total, r_j))       
-            await db.add_chat(message.chat.id, message.chat.title)
+            await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_G.format(a=message.chat.title, b=message.chat.id, c=message.chat.username, d=total, e=r_j, f=temp.B_LINK))       
+            await db.add_chat(message.chat.id, message.chat.title, message.chat.username)
         if message.chat.id in temp.BANNED_CHATS:
-            # Inspired from a boat of a banana tree
+            # Inspired from Indian HighCourt ന്റെ നിയമം പേടിച്ചു റിപ്പോയിലെ കോഡ് delete ആകിയവർ 
             buttons = [[
                 InlineKeyboardButton('𝚂𝚄𝙿𝙿𝙾𝚁𝚃', url=f'https://t.me/{SUPPORT_CHAT}')
             ]]
@@ -52,10 +51,12 @@ async def save_group(bot, message):
                     await (temp.MELCOW['welcome']).delete()
                 except:
                     pass
-            temp.MELCOW['welcome'] = await message.reply(f"<b>Hey ♥️ {u.mention}, Welcome to {message.chat.title}.../</b>")
+            if WELCOM_PIC:
+                temp.MELCOW['welcome'] = await message.reply_photo(photo=WELCOM_PIC, caption=WELCOM_TEXT.format(user=u.mention, chat=message.chat.title))
+            else:
+                temp.MELCOW['welcome'] = await message.reply_text(text=WELCOM_TEXT.format(user=u.mention, chat=message.chat.title))
 
-            
-            
+
 @Client.on_message(filters.command('leave') & filters.user(ADMINS))
 async def leave_a_chat(bot, message):
     if len(message.command) == 1:
@@ -149,9 +150,8 @@ async def get_ststs(bot, message):
     await rju.edit(script.STATUS_TXT.format(files, total_users, totl_chats, size, free))
 
 
-# a function for trespassing into others groups, Inspired by a Vazha
-# Not to be used , But Just to showcase his vazhatharam.
-# @Client.on_message(filters.command('invite') & filters.user(ADMINS))
+# വാഴ മരത്തെ കളിയാക്കിയവർ തന്നെ പേടിച്ചു ഓടിപ്പോയി
+@Client.on_message(filters.command('invite') & filters.user(ADMINS))
 async def gen_invite(bot, message):
     if len(message.command) == 1:
         return await message.reply('Give me a chat id')
@@ -170,7 +170,7 @@ async def gen_invite(bot, message):
 
 @Client.on_message(filters.command('ban_user') & filters.user(ADMINS))
 async def ban_a_user(bot, message):
-    # https://t.me/GetTGLink/4185
+    # വാഴ മരത്തെ കളിയാക്കിയവർ തന്നെ പേടിച്ചു ഓടിപ്പോയി
     if len(message.command) == 1:
         return await message.reply('Give me a user id / username')
     r = message.text.split(None)
@@ -237,14 +237,14 @@ async def unban_a_user(bot, message):
     
 @Client.on_message(filters.command('users') & filters.user(ADMINS))
 async def list_users(bot, message):
-    # https://t.me/GetTGLink/4184
-    raju = await message.reply('Getting List Of Users')
+    # വാഴ മരത്തെ കളിയാക്കിയവർ തന്നെ പേടിച്ചു ഓടിപ്പോയി
+    sps = await message.reply('Getting List Of Users')
     users = await db.get_all_users()
     out = "Users Saved In DB Are:\n\n"
     async for user in users:
         out += f"<a href=tg://user?id={user['id']}>{user['name']}</a>\n"
     try:
-        await raju.edit_text(out)
+        await sps.edit_text(out)
     except MessageTooLong:
         with open('users.txt', 'w+') as outfile:
             outfile.write(out)
@@ -252,14 +252,21 @@ async def list_users(bot, message):
 
 @Client.on_message(filters.command('chats') & filters.user(ADMINS))
 async def list_chats(bot, message):
-    raju = await message.reply('Getting List Of chats')
+    sps = await message.reply('Getting List Of chats')
     chats = await db.get_all_chats()
     out = "Chats Saved In DB Are:\n\n"
     async for chat in chats:
-        out += f"**Title:** `{chat['title']}`\n**- ID:** `{chat['id']}`\n"
+        username = chat['username']
+        username = "private" if not username else "@" + username
+        out += f"**- Title:** `{chat['title']}`\n**- ID:** `{chat['id']}`\n**Username:** {username}\n"
     try:
-        await raju.edit_text(out)
+        await sps.edit_text(out)
     except MessageTooLong:
         with open('chats.txt', 'w+') as outfile:
             outfile.write(out)
         await message.reply_document('chats.txt', caption="List Of Chats")
+
+
+
+
+
